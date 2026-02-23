@@ -4,6 +4,8 @@ import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AddDocument from "./pages/AddDocument";
+import DocumentDetail from "./pages/DocumentDetail";
+
 
 function App() {
   return (
@@ -29,7 +31,23 @@ function App() {
           </ProtectedRoute>
         }
       />
-      
+      <Route
+        path="/document/:docId"
+        element={
+          <ProtectedRoute>
+            <DocumentDetail />
+          </ProtectedRoute>
+        }
+      />
+      {/* <Route
+        path="/document/:docId"
+        element={
+          <ProtectedRoute>
+            <DocumentDetail />
+          </ProtectedRoute>
+        }
+      /> */}
+
     </Routes>
   );
 }
