@@ -1,16 +1,36 @@
-# React + Vite
+# AI Secure Docs
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Secure AI-powered document management system built with React, Firebase, and GitHub Models (Phi-4).
 
-Currently, two official plugins are available:
+## 🚀 Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Authentication**: Email/password login with Firebase Auth
+- **Role-Based Access**: Users assigned "member" role automatically
+- **AI Summarization**: Real-time document summarization using Microsoft Phi-4 via GitHub Models API
+- **Secure Architecture**: Protected routes, audit logging, Firestore security rules
+- **Real-time Updates**: Documents sync instantly across sessions
 
-## React Compiler
+## 🛠 Tech Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+| Layer | Technology |
+|-------|-----------|
+| Frontend | React + Vite |
+| Backend | Firebase (Auth, Firestore) |
+| AI/ML | GitHub Models API (Phi-4-mini) |
+| Security | Protected routes, audit logs |
 
-## Expanding the ESLint configuration
+## 📦 Installation
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```bash
+# Clone repository
+git clone https://github.com/YOUR_USERNAME/ai-secure-docs.git
+cd ai-secure-docs
+
+# Install dependencies
+npm install
+
+# Create .env file
+echo "VITE_GITHUB_TOKEN=your_github_token_here" &gt; .env
+
+# Run development server
+npm run dev
