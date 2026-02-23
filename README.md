@@ -8,17 +8,21 @@
 
 ## Screenshots
 
-| Login | Register |
-|:-----:|:--------:|
-| ![Login](https://github.com/user-attachments/assets/974d1263-1d44-46f7-9b30-df612c465f79) | ![Register](https://github.com/user-attachments/assets/34d76332-bab6-4271-ac0b-4ff24479ac2e) |
+### Login
+![Login](https://github.com/user-attachments/assets/974d1263-1d44-46f7-9b30-df612c465f79)
 
-| Dashboard | Add Document |
-|:---------:|:------------:|
-| ![Dashboard](https://github.com/user-attachments/assets/6bc6bff7-dbf0-4d49-bb18-70e97e0045f6) | ![Add Document](https://github.com/user-attachments/assets/75ba569c-cf85-4508-83cd-12d74f3141d1) |
+### Register
+![Register](https://github.com/user-attachments/assets/34d76332-bab6-4271-ac0b-4ff24479ac2e)
 
-| Document Detail |
-|:---------------:|
-| ![Document Detail](https://github.com/user-attachments/assets/b0449b9b-77d1-4077-aa75-3cd9000d7532) |
+### Dashboard
+![Dashboard](https://github.com/user-attachments/assets/6bc6bff7-dbf0-4d49-bb18-70e97e0045f6)
+
+### Add Document
+![Add Document](https://github.com/user-attachments/assets/75ba569c-cf85-4508-83cd-12d74f3141d1)
+
+### Document Detail
+![Document Detail](https://github.com/user-attachments/assets/b0449b9b-77d1-4077-aa75-3cd9000d7532)
+
 ## Features
 
 | Feature | Description |
