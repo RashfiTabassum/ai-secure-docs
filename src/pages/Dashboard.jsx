@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { auth, db } from "../firebase/firebase";
 import { signOut } from "firebase/auth";
-import { doc, getDoc, collection, query, orderBy, onSnapshot } from "firebase/firestore";
+import { doc, getDoc, collection, query, orderBy, onSnapshot, deleteDoc, addDoc, serverTimestamp } from "firebase/firestore";
 import { useNavigate, Link } from "react-router-dom";
-import DocumentCard from "../components/DocumentCard"; // NEW IMPORT
+import DocumentCard from "../components/DocumentCard";
 
 function Dashboard() {
   const [userData, setUserData] = useState(null);
@@ -46,6 +46,31 @@ function Dashboard() {
     navigate("/");
   };
 
+  // NEW: Delete logic in parent (Dashboard)
+  const handleDelete = async (docId) => {
+    const user = auth.currentUser;
+    if (!user) return;
+
+    const confirmDelete = window.confirm("Are you sure you want to delete this document?");
+    if (!confirmDelete) return;
+
+    try {
+      await deleteDoc(doc(db, "users", user.uid, "documents", docId));
+
+      await addDoc(collection(db, "auditLogs"), {
+        userId: user.uid,
+        action: "delete_document",
+        docId: docId,
+        timestamp: serverTimestamp()
+      });
+
+      alert("Document deleted successfully");
+    } catch (err) {
+      console.error(err);
+      alert("Failed to delete document");
+    }
+  };
+
   if (loading) return <p>Loading...</p>;
 
   return (
@@ -75,7 +100,7 @@ function Dashboard() {
           <DocumentCard 
             key={doc.id} 
             doc={doc} 
-            onDelete={() => {}} // onSnapshot handles refresh automatically
+            onDelete={handleDelete} // Pass delete function to child
           />
         ))
       )}

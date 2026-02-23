@@ -8,30 +8,30 @@ function DocumentCard({ doc: document, onDelete }) {
     return text.length > maxLength ? text.substring(0, maxLength) + "..." : text;
   };
 
-  const handleDelete = async () => {
-    const user = auth.currentUser;
-    if (!user) return;
+  // const handleDelete = async () => {
+  //   const user = auth.currentUser;
+  //   if (!user) return;
 
-    const confirmDelete = window.confirm("Are you sure you want to delete this document?");
-    if (!confirmDelete) return;
+  //   const confirmDelete = window.confirm("Are you sure you want to delete this document?");
+  //   if (!confirmDelete) return;
 
-    try {
-      await deleteDoc(doc(db, "users", user.uid, "documents", document.id));
+  //   try {
+  //     await deleteDoc(doc(db, "users", user.uid, "documents", document.id));
 
-      await addDoc(collection(db, "auditLogs"), {
-        userId: user.uid,
-        action: "delete_document",
-        docId: document.id,
-        timestamp: serverTimestamp()
-      });
+  //     await addDoc(collection(db, "auditLogs"), {
+  //       userId: user.uid,
+  //       action: "delete_document",
+  //       docId: document.id,
+  //       timestamp: serverTimestamp()
+  //     });
 
-      alert("Document deleted successfully");
-      onDelete(); // Notify parent to refresh
-    } catch (err) {
-      console.error(err);
-      alert("Failed to delete document");
-    }
-  };
+  //     alert("Document deleted successfully");
+  //     onDelete(); // Notify parent to refresh
+  //   } catch (err) {
+  //     console.error(err);
+  //     alert("Failed to delete document");
+  //   }
+  // };
 
   return (
     <div 
