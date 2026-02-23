@@ -2,7 +2,23 @@
 
 > A secure, AI-powered document management system built with React, Firebase, and multi-provider LLM integration (Gemini / OpenRouter / GitHub Models).
 
+**Live Demo:** [ai-secure-docs.vercel.app](https://ai-secure-docs.vercel.app/)
+
 ---
+
+## Screenshots
+
+| Login | Register |
+|:-----:|:--------:|
+| ![Login](screenshots/login.png) | ![Register](screenshots/register.png) |
+
+| Dashboard | Add Document |
+|:---------:|:------------:|
+| ![Dashboard](screenshots/dashboard.png) | ![Add Document](screenshots/add-document.png) |
+
+| Document Detail |
+|:---------------:|
+| ![Document Detail](screenshots/document-detail.png) |
 
 ## Features
 
