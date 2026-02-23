@@ -10,7 +10,9 @@
 
 | Login | Register |
 |:-----:|:--------:|
-| ![Login](screenshots/login.png) | ![Register](screenshots/register.png) |
+| ![Login]| <img width="1365" height="631" alt="login" src="https://github.com/user-attachments/assets/974d1263-1d44-46f7-9b30-df612c465f79" /> |
+![Register] <img width="1365" height="623" alt="register" src="https://github.com/user-attachments/assets/34d76332-bab6-4271-ac0b-4ff24479ac2e" />
+|
 
 | Dashboard | Add Document |
 |:---------:|:------------:|
