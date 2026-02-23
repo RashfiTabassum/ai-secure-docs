@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth, db } from "../firebase/firebase";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { useNavigate, Link } from "react-router-dom";
 
 function Register() {
@@ -21,7 +21,7 @@ function Register() {
       await setDoc(doc(db, "users", user.uid), {
         email: user.email,
         role: "member",
-        createdAt: new Date()
+        createdAt: serverTimestamp()
       });
 
       navigate("/dashboard");

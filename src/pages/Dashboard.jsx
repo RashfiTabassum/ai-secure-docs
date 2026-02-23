@@ -1,155 +1,10 @@
-// import { useEffect, useState } from "react";
-// import { auth, db } from "../firebase/firebase";
-// import { signOut } from "firebase/auth";
-// import { doc, getDoc, collection, query, orderBy, onSnapshot, deleteDoc, addDoc, serverTimestamp } from "firebase/firestore";
-// import { useNavigate, Link } from "react-router-dom";
-// import DocumentCard from "../components/DocumentCard";
-
-// function Dashboard() {
-//   const [userData, setUserData] = useState(null);
-//   const [documents, setDocuments] = useState([]);
-//   const [loading, setLoading] = useState(true);
-//   const navigate = useNavigate();
-
-//   useEffect(() => {
-//     const user = auth.currentUser;
-//     if (!user) {
-//       navigate("/");
-//       return;
-//     }
-
-//     const fetchUserData = async () => {
-//       const userDoc = await getDoc(doc(db, "users", user.uid));
-//       if (userDoc.exists()) setUserData(userDoc.data());
-//     };
-
-//     const q = query(
-//       collection(db, "users", user.uid, "documents"),
-//       orderBy("createdAt", "desc")
-//     );
-
-//     const unsubscribe = onSnapshot(q, (snapshot) => {
-//       const docs = snapshot.docs.map((doc) => ({
-//         id: doc.id,
-//         ...doc.data(),
-//       }));
-//       setDocuments(docs);
-//       setLoading(false);
-//     });
-
-//     fetchUserData();
-//     return () => unsubscribe();
-//   }, [navigate]);
-
-//   const handleLogout = async () => {
-//     await signOut(auth);
-//     navigate("/");
-//   };
-
-//   // Delete logic for child DocumentCard
-//   const handleDelete = async (docId) => {
-//     const user = auth.currentUser;
-//     if (!user) return;
-
-//     const confirmDelete = window.confirm("Are you sure you want to delete this document?");
-//     if (!confirmDelete) return;
-
-//     try {
-//       await deleteDoc(doc(db, "users", user.uid, "documents", docId));
-
-//       await addDoc(collection(db, "auditLogs"), {
-//         userId: user.uid,
-//         action: "delete_document",
-//         docId: docId,
-//         timestamp: serverTimestamp(),
-//       });
-
-//       alert("Document deleted successfully");
-//     } catch (err) {
-//       console.error(err);
-//       alert("Failed to delete document");
-//     }
-//   };
-
-//   if (loading) return <p>Loading...</p>;
-
-//   return (
-//     <div style={{ padding: "20px", maxWidth: "800px", margin: "0 auto" }}>
-//       <h2>Dashboard</h2>
-
-//       {/* User Info */}
-//       {userData && (
-//         <div
-//           style={{
-//             marginBottom: "20px",
-//             padding: "15px",
-//             background: "#f0f0f0",
-//             borderRadius: "8px",
-//           }}
-//         >
-//           <p><strong>Email:</strong> {userData.email}</p>
-//           <p><strong>Role:</strong> {userData.role}</p>
-//         </div>
-//       )}
-
-//       {/* Actions */}
-//       <div style={{ marginBottom: "20px" }}>
-//         <Link to="/add-document">
-//           <button
-//             style={{
-//               marginRight: "10px",
-//               padding: "10px 20px",
-//               borderRadius: "5px",
-//               cursor: "pointer",
-//             }}
-//           >
-//             Add New Document
-//           </button>
-//         </Link>
-//         <button
-//           onClick={handleLogout}
-//           style={{
-//             padding: "10px 20px",
-//             borderRadius: "5px",
-//             cursor: "pointer",
-//           }}
-//         >
-//           Logout
-//         </button>
-//       </div>
-
-//       {/* Documents */}
-//       <h3>Your Documents ({documents.length})</h3>
-
-//       {documents.length === 0 ? (
-//         <p>No documents yet. Create your first one!</p>
-//       ) : (
-//         documents.map((doc) => (
-//           // <DocumentCard key={doc.id} doc={doc} onDelete={() => handleDelete(doc.id)} />
-//           // <DocumentCard 
-//           //   key={doc.id} 
-//           //   doc={doc} 
-//           //   onDelete={() => setDocuments(docs => docs.filter(d => d.id !== doc.id))}
-//           // />
-//           <DocumentCard
-//             key={doc.id}
-//             doc={doc}
-//             onDelete={() => setDocuments(docs => docs.filter(d => d.id !== doc.id))}
-//           />
-//         ))
-//       )}
-//     </div>
-//   );
-// }
-
-// export default Dashboard;
-
 import { useEffect, useState } from "react";
 import { auth, db } from "../firebase/firebase";
 import { signOut } from "firebase/auth";
-import { doc, getDoc, collection, query, orderBy, onSnapshot, deleteDoc, addDoc, serverTimestamp } from "firebase/firestore";
+import { doc, getDoc } from "firebase/firestore";
 import { useNavigate, Link } from "react-router-dom";
-import DocumentCard from "../components/DocumentCard";
+import Navbar from "../components/Navbar";
+import { subscribeToDocuments, removeDocument } from "../services/documentService";
 
 function Dashboard() {
   const [userData, setUserData] = useState(null);
@@ -169,16 +24,7 @@ function Dashboard() {
       if (userDoc.exists()) setUserData(userDoc.data());
     };
 
-    const q = query(
-      collection(db, "users", user.uid, "documents"),
-      orderBy("createdAt", "desc")
-    );
-
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const docs = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
+    const unsubscribe = subscribeToDocuments(user.uid, (docs) => {
       setDocuments(docs);
       setLoading(false);
     });
@@ -200,15 +46,7 @@ function Dashboard() {
     if (!confirmDelete) return;
 
     try {
-      await deleteDoc(doc(db, "users", user.uid, "documents", docId));
-
-      await addDoc(collection(db, "auditLogs"), {
-        userId: user.uid,
-        action: "delete_document",
-        docId,
-        timestamp: serverTimestamp()
-      });
-
+      await removeDocument(user.uid, docId);
       alert("Document deleted successfully");
     } catch (err) {
       console.error(err);
@@ -248,82 +86,7 @@ function Dashboard() {
       fontFamily: "'Poppins', sans-serif",
       color: "#1e293b"
     }}>
-      {/* TOP NAV BAR */}
-      <nav style={{
-        background: "rgba(255,255,255,0.85)",
-        backdropFilter: "blur(12px)",
-        borderBottom: "1px solid rgba(99,102,241,0.1)",
-        padding: "12px 32px",
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        position: "sticky",
-        top: 0,
-        zIndex: 10
-      }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-          <div style={{
-            width: "34px",
-            height: "34px",
-            borderRadius: "10px",
-            background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            fontSize: "16px",
-            boxShadow: "0 2px 8px rgba(99,102,241,0.3)"
-          }}>📄</div>
-          <h1 style={{
-            margin: 0,
-            fontSize: "18px",
-            fontWeight: "700",
-            background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent"
-          }}>AI Doc Manager</h1>
-        </div>
-
-        <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
-          {userData && (
-            <div style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-              background: "#f1f0ff",
-              padding: "6px 14px",
-              borderRadius: "20px"
-            }}>
-              <div style={{
-                width: "26px",
-                height: "26px",
-                borderRadius: "50%",
-                background: "linear-gradient(135deg, #6366f1, #ec4899)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: "12px",
-                color: "#fff",
-                fontWeight: "700"
-              }}>{userData.email?.charAt(0).toUpperCase()}</div>
-              <span style={{ fontSize: "12px", color: "#6b7280", fontWeight: "500" }}>{userData.email}</span>
-            </div>
-          )}
-          <button onClick={handleLogout} style={{
-            padding: "7px 18px",
-            borderRadius: "8px",
-            border: "1px solid #fecaca",
-            background: "#fef2f2",
-            color: "#dc2626",
-            fontWeight: "600",
-            fontSize: "12px",
-            cursor: "pointer",
-            transition: "all 0.2s"
-          }}
-            onMouseEnter={e => { e.currentTarget.style.background = "#dc2626"; e.currentTarget.style.color = "#fff"; e.currentTarget.style.borderColor = "#dc2626"; }}
-            onMouseLeave={e => { e.currentTarget.style.background = "#fef2f2"; e.currentTarget.style.color = "#dc2626"; e.currentTarget.style.borderColor = "#fecaca"; }}
-          >Logout</button>
-        </div>
-      </nav>
+      <Navbar user={userData} onLogout={handleLogout} />
 
       {/* MAIN CONTENT */}
       <div style={{ maxWidth: "760px", margin: "0 auto", padding: "36px 20px" }}>

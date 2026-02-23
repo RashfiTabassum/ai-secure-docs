@@ -1,223 +1,9 @@
-// import { useEffect, useState } from "react";
-// import { useParams, useNavigate } from "react-router-dom";
-// import { doc, getDoc, updateDoc, serverTimestamp, collection, addDoc } from "firebase/firestore";
-// import { auth, db } from "../firebase/firebase";
-
-// const GITHUB_TOKEN = import.meta.env.VITE_GITHUB_TOKEN;
-// const MODEL = "microsoft/Phi-4-mini-instruct";
-
-// function DocumentDetail() {
-//   const { docId } = useParams();
-//   const navigate = useNavigate();
-//   const [document, setDocument] = useState(null);
-//   const [loading, setLoading] = useState(true);
-//   const [title, setTitle] = useState("");
-//   const [content, setContent] = useState("");
-//   const [summary, setSummary] = useState("");
-//   const [saving, setSaving] = useState(false);
-//   const [updated, setUpdated] = useState(false);
-
-//   useEffect(() => {
-//     const fetchDoc = async () => {
-//       const user = auth.currentUser;
-//       if (!user) {
-//         navigate("/");
-//         return;
-//       }
-
-//       const docRef = doc(db, "users", user.uid, "documents", docId);
-//       const docSnap = await getDoc(docRef);
-
-//       if (docSnap.exists()) {
-//         const data = docSnap.data();
-//         setDocument(data);
-//         setTitle(data.title);
-//         setContent(data.content);
-//         setSummary(data.summary || "No summary available");
-//       } else {
-//         alert("Document not found");
-//         navigate("/dashboard");
-//       }
-//       setLoading(false);
-//     };
-
-//     fetchDoc();
-//   }, [docId, navigate]);
-
-//   const getAISummary = async (text) => {
-//     try {
-//       const response = await fetch("https://models.github.ai/inference/chat/completions", {
-//         method: "POST",
-//         headers: {
-//           "Authorization": `Bearer ${GITHUB_TOKEN}`,
-//           "Content-Type": "application/json",
-//         },
-//         body: JSON.stringify({
-//           model: MODEL,
-//           messages: [
-//             { role: "system", content: "You are a summarization expert. Create a 1-2 sentence summary (max 30 words)." },
-//             { role: "user", content: `Summarize this in 1 sentence (max 20 words): ${text.substring(0, 1000)}` }
-//           ],
-//           max_tokens: 50,
-//           temperature: 0.1,
-//         }),
-//       });
-
-//       if (!response.ok) return text.substring(0, 60) + "...";
-
-//       const result = await response.json();
-//       return result.choices?.[0]?.message?.content?.trim() || text.substring(0, 60) + "...";
-//     } catch (err) {
-//       console.error("AI summary failed:", err);
-//       return text.substring(0, 60) + "...";
-//     }
-//   };
-
-//   const handleSave = async () => {
-//     const user = auth.currentUser;
-//     if (!user) return;
-
-//     setSaving(true);
-//     try {
-//       const newSummary = await getAISummary(content);
-
-//       const docRef = doc(db, "users", user.uid, "documents", docId);
-//       await updateDoc(docRef, {
-//         title,
-//         content,
-//         summary: newSummary,
-//         updatedAt: serverTimestamp(),
-//       });
-
-//       await addDoc(collection(db, "auditLogs"), {
-//         userId: user.uid,
-//         action: "update_document",
-//         docId,
-//         timestamp: serverTimestamp(),
-//       });
-
-//       setSummary(newSummary);
-//       setUpdated(true);
-//       setTimeout(() => setUpdated(false), 1500);
-//     } catch (err) {
-//       console.error(err);
-//       alert("Failed to save document");
-//     } finally {
-//       setSaving(false);
-//     }
-//   };
-
-//   if (loading) return <p>Loading document...</p>;
-
-//   return (
-//     <div style={{ padding: "20px", maxWidth: "700px", margin: "0 auto" }}>
-//       <h2>Document Detail</h2>
-
-//       {/* Editable Card */}
-//       <div
-//         style={{
-//           border: "1px solid #ddd",
-//           padding: "15px",
-//           borderRadius: "8px",
-//           background: "white",
-//           boxShadow: "0 2px 4px rgba(0,0,0,0.1)"
-//         }}
-//       >
-//         {/* Title Input */}
-//         <input
-//           type="text"
-//           value={title}
-//           onChange={(e) => setTitle(e.target.value)}
-//           placeholder="Title"
-//           style={{
-//             width: "100%",
-//             padding: "10px",
-//             fontSize: "16px",
-//             marginBottom: "10px",
-//             borderRadius: "6px",
-//             border: "1px solid #ccc"
-//           }}
-//         />
-
-//         {/* Content Textarea */}
-//         <textarea
-//           value={content}
-//           onChange={(e) => setContent(e.target.value)}
-//           rows={8}
-//           placeholder="Content"
-//           style={{
-//             width: "100%",
-//             padding: "10px",
-//             fontSize: "14px",
-//             borderRadius: "6px",
-//             border: "1px solid #ccc",
-//             marginBottom: "10px"
-//           }}
-//         />
-
-//         {/* AI Summary Box */}
-//         <div
-//           style={{
-//             background: "#e6f7ff",
-//             padding: "10px",
-//             borderLeft: "4px solid #1890ff",
-//             borderRadius: "4px",
-//             marginBottom: "10px"
-//           }}
-//         >
-//           <strong>🤖 AI Summary:</strong> {summary || "No summary available"}
-//         </div>
-
-//         <small style={{ color: "#999", display: "block", marginBottom: "10px" }}>
-//           Created: {document.createdAt?.toDate?.().toLocaleString() || "Just now"}
-//         </small>
-
-//         <div style={{ display: "flex", gap: "10px" }}>
-//           <button
-//             onClick={handleSave}
-//             disabled={saving}
-//             style={{
-//               flex: 1,
-//               background: "#1890ff",
-//               color: "white",
-//               border: "none",
-//               padding: "10px 0",
-//               borderRadius: "6px",
-//               cursor: "pointer"
-//             }}
-//           >
-//             {saving ? "Saving & Generating Summary..." : "Save Changes + AI Summary"}
-//           </button>
-
-//           <button
-//             onClick={() => navigate("/dashboard")}
-//             style={{
-//               flex: 1,
-//               border: "1px solid #ddd",
-//               padding: "10px 0",
-//               borderRadius: "6px",
-//               cursor: "pointer",
-//               background: "white"
-//             }}
-//           >
-//             Back to Dashboard
-//           </button>
-//         </div>
-
-//         {updated && <p style={{ color: "#1890ff", marginTop: "10px" }}>Document updated!</p>}
-//       </div>
-//     </div>
-//   );
-// }
-
-// export default DocumentDetail;
 import { useEffect, useState } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
-import { doc, getDoc, updateDoc, serverTimestamp, collection, addDoc } from "firebase/firestore";
-import { auth, db } from "../firebase/firebase";
-
-const GITHUB_TOKEN = import.meta.env.VITE_GITHUB_TOKEN;
-const MODEL = "microsoft/Phi-4-mini-instruct";
+import { useParams, useNavigate } from "react-router-dom";
+import { auth } from "../firebase/firebase";
+import Navbar from "../components/Navbar";
+import { getAISummary } from "../services/aiService";
+import { fetchDocument, updateDocument } from "../services/documentService";
 
 function DocumentDetail() {
   const { docId } = useParams();
@@ -229,21 +15,18 @@ function DocumentDetail() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    const fetchDoc = async () => {
+    const loadDoc = async () => {
       const user = auth.currentUser;
       if (!user) {
         navigate("/");
         return;
       }
 
-      const docRef = doc(db, "users", user.uid, "documents", docId);
-      const docSnap = await getDoc(docRef);
-
-      if (docSnap.exists()) {
-        const data = docSnap.data();
-        setDocument(data);
-        setTitle(data.title);
-        setContent(data.content);
+      const docData = await fetchDocument(user.uid, docId);
+      if (docData) {
+        setDocument(docData);
+        setTitle(docData.title);
+        setContent(docData.content);
       } else {
         alert("Document not found");
         navigate("/dashboard");
@@ -251,36 +34,8 @@ function DocumentDetail() {
       setLoading(false);
     };
 
-    fetchDoc();
+    loadDoc();
   }, [docId, navigate]);
-
-  const getAISummary = async (text) => {
-    try {
-      const response = await fetch("https://models.github.ai/inference/chat/completions", {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${GITHUB_TOKEN}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          model: MODEL,
-          messages: [
-            { role: "system", content: "You are a summarization expert. Create a 1-2 sentence summary (max 30 words)." },
-            { role: "user", content: `Summarize this in 1 sentence (max 20 words): ${text.substring(0, 1000)}` }
-          ],
-          max_tokens: 50,
-          temperature: 0.1
-        })
-      });
-
-      if (!response.ok) return text.substring(0, 60) + "...";
-      const result = await response.json();
-      return result.choices?.[0]?.message?.content?.trim() || text.substring(0, 60) + "...";
-    } catch (err) {
-      console.error("AI summary failed:", err);
-      return text.substring(0, 60) + "...";
-    }
-  };
 
   const handleSave = async () => {
     const user = auth.currentUser;
@@ -288,22 +43,8 @@ function DocumentDetail() {
 
     setSaving(true);
     try {
-      const summary = await getAISummary(content);
-
-      const docRef = doc(db, "users", user.uid, "documents", docId);
-      await updateDoc(docRef, {
-        title,
-        content,
-        summary,
-        updatedAt: serverTimestamp()
-      });
-
-      await addDoc(collection(db, "auditLogs"), {
-        userId: user.uid,
-        action: "update_document",
-        docId,
-        timestamp: serverTimestamp()
-      });
+      const { summary } = await getAISummary(content);
+      await updateDocument(user.uid, docId, { title, content, summary });
 
       alert("Document updated with new AI summary!");
       navigate("/dashboard");
@@ -346,57 +87,7 @@ function DocumentDetail() {
       background: "linear-gradient(135deg, #eef2ff 0%, #fce7f3 50%, #e0f2fe 100%)",
       fontFamily: "'Poppins', sans-serif"
     }}>
-      {/* NAV BAR */}
-      <nav style={{
-        background: "rgba(255,255,255,0.85)",
-        backdropFilter: "blur(12px)",
-        borderBottom: "1px solid rgba(99,102,241,0.1)",
-        padding: "12px 32px",
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        position: "sticky",
-        top: 0,
-        zIndex: 10
-      }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-          <div style={{
-            width: "34px",
-            height: "34px",
-            borderRadius: "10px",
-            background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            fontSize: "16px",
-            boxShadow: "0 2px 8px rgba(99,102,241,0.3)"
-          }}>📄</div>
-          <h1 style={{
-            margin: 0,
-            fontSize: "18px",
-            fontWeight: "700",
-            background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent"
-          }}>AI Doc Manager</h1>
-        </div>
-        <Link to="/dashboard" style={{ textDecoration: "none" }}>
-          <button style={{
-            padding: "7px 18px",
-            borderRadius: "8px",
-            border: "1px solid #c7d2fe",
-            background: "#eef2ff",
-            color: "#6366f1",
-            fontWeight: "600",
-            fontSize: "12px",
-            cursor: "pointer",
-            transition: "all 0.2s"
-          }}
-            onMouseEnter={e => { e.currentTarget.style.background = "#6366f1"; e.currentTarget.style.color = "#fff"; e.currentTarget.style.borderColor = "#6366f1"; }}
-            onMouseLeave={e => { e.currentTarget.style.background = "#eef2ff"; e.currentTarget.style.color = "#6366f1"; e.currentTarget.style.borderColor = "#c7d2fe"; }}
-          >← Back to Dashboard</button>
-        </Link>
-      </nav>
+      <Navbar backTo="/dashboard" backLabel="← Back to Dashboard" />
 
       {/* CONTENT */}
       <div style={{ maxWidth: "640px", margin: "0 auto", padding: "36px 20px" }}>
